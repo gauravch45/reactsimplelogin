@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  mysql:
+    container_name: mysql-db
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: reactusers
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "mysql-db"]
+      timeout: 20s
+      retries: 10
+    volumes:
+      - ./backendapi/data:/var/lib/mysql
+    ports:
+      - "3333:3306"
+
+  backend:
+    container_name: backend
+    build: ./backendapi
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+       - "3000:3000"

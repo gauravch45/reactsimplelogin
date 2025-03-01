@@ -12,20 +12,29 @@ app.use(bodyParser.json());
 
 // MySQL Database Connection
 const db = mysql.createConnection({
-    host: 'localhost',  // Change this if your DB is hosted elsewhere
-    port: '3333',
-    user: 'root',       // Your MySQL username
-    password: 'Black@113322',       // Your MySQL password
+    host: 'mysql-db',  // Change this if your DB is hosted elsewhere
+    user: 'myuser',       // Your MySQL username
+    password: 'mypassword',       // Your MySQL password
     database: 'reactusers'
 });
 
+// Reconnect to the database if the connection is closed
+function reconnect(){
 db.connect(err => {
     if (err) {
         console.error('Database connection failed: ' + err.stack);
         return;
     }
-    console.log('Connected to MySQL database');
+    console.log('Re-Connected to MySQL database');
 });
+}
+
+// Check if the connection is closed and reconnect if necessary
+function checkConnection() {
+    if (db.state === 'closed') {
+      reconnect();
+    }
+  }
 
 // Sample route
 app.get('/', (req, res) => {
@@ -34,6 +43,7 @@ app.get('/', (req, res) => {
 
 // Sample data endpoint
 app.get('/api/data', (req, res) => {
+    checkConnection();
     db.query('SELECT * FROM users', (err, results) => {
         if (err) {
             return res.status(500).json({ error: err.message });
